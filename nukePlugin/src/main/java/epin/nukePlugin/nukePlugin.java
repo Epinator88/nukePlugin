@@ -31,6 +31,7 @@ public final class nukePlugin extends JavaPlugin {
         ArrayList<String> nukeLore = new ArrayList<>();
         nukeLore.add("A nuclear bomb");
         nukeLore.add("Scales in explosive power!");
+        nukeLore.add("WE BRING THE BOOM TO YOU");
         nuke.setLore(nukeLore);
         nuke.setItemMeta(nukeMeta);
         getServer().getPluginManager().registerEvents(new NukeBlockManager(), this);

@@ -59,7 +59,7 @@ public class NukeBlockManager implements Listener {
             ev.getBlock().setType(Material.AIR);
             //spawn a primed tnt at the same spot at 8 seconds to detonation
             TNTPrimed tnt = ev.getBlock().getWorld().spawn(ev.getBlock().getLocation().add(.5, .5, .5), TNTPrimed.class);
-            tnt.setFuseTicks(160); //check this
+            tnt.setFuseTicks(360); //check this
             tnt.setGlowing(true);
             List<Entity> list = tnt.getNearbyEntities(50, 50, 50);
             for (Entity k : list) {
@@ -78,8 +78,10 @@ public class NukeBlockManager implements Listener {
     public void onDefuseAttempt(PlayerInteractEntityEvent ev) {
         if (ev.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.FLINT_AND_STEEL)) {
             if (ev.getRightClicked().getPersistentDataContainer().has(nukePlugin.instance.isNuke, PersistentDataType.BOOLEAN) && ev.getRightClicked().getPersistentDataContainer().get(nukePlugin.instance.isNuke, PersistentDataType.BOOLEAN)) {
-                ev.getRightClicked().getLocation().getBlock().setType(Material.TNT);
-                blockMap.put(ev.getRightClicked().getLocation(), nukePlugin.instance.nuke);
+                blockMap.remove(ev.getRightClicked().getLocation().getBlock().getLocation());
+                ev.getRightClicked().getLocation().getBlock().setType(Material.IRON_BLOCK);
+                ev.getPlayer().getServer().broadcastMessage(ChatColor.RED + ev.getPlayer().getName().toUpperCase() + ChatColor.WHITE + " defused the bomb. Crisis Averted");
+
                 ev.getRightClicked().remove();
             }
         }
