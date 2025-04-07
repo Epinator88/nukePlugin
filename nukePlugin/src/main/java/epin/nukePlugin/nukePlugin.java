@@ -25,6 +25,8 @@ public final class nukePlugin extends JavaPlugin {
 
     public Map<Player, Player> bannedPlayers; //key is banned player, value is player that killed them
 
+    public ArrayList<Recipe> recipes;
+
     public ItemStack nuke;
 
     public ItemStack neoNuke;
@@ -42,6 +44,18 @@ public final class nukePlugin extends JavaPlugin {
     public ItemStack hyperGpdrBlock;
 
     public NamespacedKey hyperGpdrKey;
+
+    public ItemStack icbm;
+
+    public NamespacedKey icbmKey;
+
+    public ItemStack totemDust;
+
+    public NamespacedKey totemDustKey;
+
+    public ItemStack goatem;
+
+    public NamespacedKey goatemKey;
 
     public ItemStack unstableCore;
 
@@ -68,6 +82,7 @@ public final class nukePlugin extends JavaPlugin {
         keys = new ArrayList<>();
         bannedPlayers = new HashMap<>() {
         };
+        recipes = new ArrayList<>();
 
         nuke = new ItemStack(Material.TNT);
         ItemMeta oldNukeMeta = nuke.getItemMeta();
@@ -94,7 +109,6 @@ public final class nukePlugin extends JavaPlugin {
         nukeMeta.lore(nukeLore);
         neoNuke.setItemMeta(nukeMeta);
         getServer().getPluginManager().registerEvents(new EventManager(), this);
-        getCommand("gimme").setExecutor(new GiveNukeCommand());
         items.add(neoNuke);
 
         gpdrBlkKey = new NamespacedKey(this, "gunpowder_block");
@@ -123,6 +137,15 @@ public final class nukePlugin extends JavaPlugin {
         hgpdrMeta.lore(genLore);
         hyperGpdrBlock.setItemMeta(hgpdrMeta);
         items.add(hyperGpdrBlock);
+
+        icbmKey = new NamespacedKey(this, "intercontinental_ballistic_missile");
+        keys.add(icbmKey);
+        icbm = new ItemStack(Material.FIREWORK_ROCKET);
+        ItemMeta icbMeta = icbm.getItemMeta();
+        icbMeta.customName(Component.text("Intercontinental Ballistic Missile"));
+        icbMeta.lore(genLore);
+        icbm.setItemMeta(icbMeta);
+        items.add(icbm);
 
         unCoreKey = new NamespacedKey(this, "unstable_core");
         keys.add(unCoreKey);
@@ -161,6 +184,33 @@ public final class nukePlugin extends JavaPlugin {
         banHammer.setDurability((short) 499); //THIS IS BUGGED IT GETS FULL DURABILITY
         items.add(banHammer);
 
+        totemDustKey = new NamespacedKey(this, "ground_totem");
+        keys.add(totemDustKey);
+        totemDust = new ItemStack(Material.GLOWSTONE_DUST);
+        ItemMeta totemMeta = totemDust.getItemMeta();
+        totemMeta.customName(Component.text("Totem Dust"));
+        ArrayList<Component> totemLore = new ArrayList<>();
+        totemLore.add(Component.text("Ground up remains of a Totem of Undying."));
+        totemLore.add(Component.text("Can be used to \"Charge\" other totems"));
+        totemLore.add(Component.text("Charged totems give more effects, and spawn lightning."));
+        totemLore.add(genLore.get(0));
+        totemMeta.lore(totemLore);
+        totemDust.setItemMeta(totemMeta);
+        items.add(totemDust);
+
+        goatemKey = new NamespacedKey(this, "goatem_of_undying");
+        keys.add(goatemKey);
+        goatem = new ItemStack(Material.TOTEM_OF_UNDYING);
+        ItemMeta goatemMeta = goatem.getItemMeta();
+        goatemMeta.customName(Component.text("Charged Totem"));
+        ArrayList<Component> goatemLore = new ArrayList<>();
+        goatemLore.add(Component.text("Supercharged Totem of Undying, 5x the power."));
+        goatemLore.add(Component.text("Enough revival power to survive a nuke, point blank"));
+        goatemLore.add(genLore.get(0));
+        goatemMeta.lore(goatemLore);
+        goatem.setItemMeta(goatemMeta);
+        items.add(goatem);
+
         Bukkit.getLogger().info("sigma energy");
         // Plugin startup logic
         // Run the method to give all recipes but for each player in the server on reload
@@ -173,14 +223,14 @@ public final class nukePlugin extends JavaPlugin {
                               "GGG",
                               "GGG");
         gpwdBlockRecipe.setIngredient('G', Material.GUNPOWDER);
-        getServer().addRecipe(gpwdBlockRecipe, true);
+        recipes.add(gpwdBlockRecipe);
 
         //gunpowder from block into dust
         NamespacedKey gpwd = new NamespacedKey(this, "gunpowder");
         keys.add(gpwd);
         ShapelessRecipe blockToGpwd = new ShapelessRecipe(gpwd, new ItemStack(Material.GUNPOWDER, 9));
         blockToGpwd.addIngredient(gpdrBlock);
-        getServer().addRecipe(blockToGpwd, true);
+        recipes.add(blockToGpwd);
 
         //compressed gunpowder block
         ShapedRecipe superGpwdBlockRecipe = new ShapedRecipe(superGpdrKey, superGpdrBlock);
@@ -188,14 +238,14 @@ public final class nukePlugin extends JavaPlugin {
                               "GGG",
                               "GGG");
         superGpwdBlockRecipe.setIngredient('G', gpdrBlock);
-        getServer().addRecipe(superGpwdBlockRecipe, true);
+        recipes.add(superGpwdBlockRecipe);
 
         //gunpowder block from compressed gunpowder block
         NamespacedKey gpwdBlock = new NamespacedKey(this, "super_to_gunpowder_block");
         keys.add(gpwdBlock);
         ShapelessRecipe superToBlock = new ShapelessRecipe(gpwdBlock, gpdrBlock.asQuantity(9));
         superToBlock.addIngredient(superGpdrBlock);
-        getServer().addRecipe(superToBlock, true);
+        recipes.add(superToBlock);
 
         //ultra-compressed gunpowder block
         ShapedRecipe hyperGpwdBlockRecipe = new ShapedRecipe(hyperGpdrKey, hyperGpdrBlock);
@@ -203,14 +253,22 @@ public final class nukePlugin extends JavaPlugin {
                                    "GGG",
                                    "GGG");
         hyperGpwdBlockRecipe.setIngredient('G', superGpdrBlock);
-        getServer().addRecipe(hyperGpwdBlockRecipe, true);
+        recipes.add(hyperGpwdBlockRecipe);
 
         //ultra-compressed gunpowder block into compressed gunpowder blocks
         NamespacedKey superGpwdBlock = new NamespacedKey(this, "hyper_to_super_gunpowder_block");
         keys.add(superGpwdBlock);
         ShapelessRecipe hyperToSuper = new ShapelessRecipe(superGpwdBlock, superGpdrBlock.asQuantity(9));
         hyperToSuper.addIngredient(hyperGpdrBlock);
-        getServer().addRecipe(hyperToSuper, true);
+        recipes.add(hyperToSuper);
+
+        //intercontinental ballistic missile
+        ShapelessRecipe icbmRecipe = new ShapelessRecipe(icbmKey, icbm);
+        icbmRecipe.addIngredient(hyperGpdrBlock);
+        icbmRecipe.addIngredient(Material.FIREWORK_STAR);
+        icbmRecipe.addIngredient(Material.PAPER);
+        icbmRecipe.addIngredient(Material.REDSTONE_BLOCK);
+        recipes.add(icbmRecipe);
 
         //unstable core
         ShapedRecipe unstableCoreRecipe = new ShapedRecipe(unCoreKey, unstableCore);
@@ -223,11 +281,11 @@ public final class nukePlugin extends JavaPlugin {
         unstableCoreRecipe.setIngredient('S', Material.NETHER_STAR);
         unstableCoreRecipe.setIngredient('C', Material.HEAVY_CORE);
         unstableCoreRecipe.setIngredient('E', Material.ECHO_SHARD);
-        getServer().addRecipe(unstableCoreRecipe, true);
+        recipes.add(unstableCoreRecipe);
 
         //stable core
         BlastingRecipe stableCoreRecipe = new BlastingRecipe(coreKey, stableCore, new RecipeChoice.ExactChoice(unstableCore), 2, 9999);
-        getServer().addRecipe(stableCoreRecipe, true);
+        recipes.add(stableCoreRecipe);
         //a furnace full of blaze rods will be able to smelt 2 total
         //check onSmeltBypass if this doesn't work
 
@@ -238,7 +296,7 @@ public final class nukePlugin extends JavaPlugin {
                          "GGG");
         nukeRecipe.setIngredient('G', hyperGpdrBlock);
         nukeRecipe.setIngredient('T', stableCore);
-        getServer().addRecipe(nukeRecipe, true);
+        recipes.add(nukeRecipe);
 
         //the bigger boy (banhammer)
         ShapedRecipe banRecipe = new ShapedRecipe(banHammerKey, banHammer);
@@ -251,23 +309,29 @@ public final class nukePlugin extends JavaPlugin {
         banRecipe.setIngredient('C', Material.HEAVY_CORE);
         banRecipe.setIngredient('b', new ItemStack(Material.BREEZE_ROD).asQuantity(32));
         banRecipe.setIngredient('s', new ItemStack(Material.RESIN_BRICK).asQuantity(64));
-        //getServer().addRecipe(banRecipe, true);
+        //recipes.add(banRecipe);
 
-        for(Player p : getServer().getOnlinePlayers()) {
-            unlockRecipes(p);
+        StonecuttingRecipe totemRecipe = new StonecuttingRecipe(totemDustKey, totemDust, Material.TOTEM_OF_UNDYING);
+        recipes.add(totemRecipe);
+
+        ShapedRecipe goatemRecipe = new ShapedRecipe(goatemKey, goatem);
+        goatemRecipe.shape(" D ",
+                           "DTD",
+                           " D ");
+        goatemRecipe.setIngredient('D', totemDust);
+        goatemRecipe.setIngredient('T', Material.TOTEM_OF_UNDYING);
+        recipes.add(goatemRecipe);
+
+        for(Recipe r : recipes) {
+            getServer().addRecipe(r);
         }
+
+        getCommand("gimme").setExecutor(new GiveNukeCommand());
+        getCommand("nukerecipes").setExecutor(new RecipeCommand());
     }
 
     @Override
     public void onDisable() {
         bannedPlayers = new HashMap<>();
-    }
-
-    public void unlockRecipes(Player p) {
-        for(NamespacedKey key : nukePlugin.instance.keys) {
-            if (p.hasDiscoveredRecipe(key)) {
-                p.discoverRecipe(key);
-            }
-        }
     }
 }
