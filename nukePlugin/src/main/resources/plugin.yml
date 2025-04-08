@@ -1,5 +1,5 @@
 name: nukePlugin
-version: '1.5'
+version: '1.5.1'
 main: epin.nukePlugin.nukePlugin
 api-version: '1.21'
 authors: [ Ep1n ]

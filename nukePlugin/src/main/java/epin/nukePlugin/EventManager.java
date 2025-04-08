@@ -10,6 +10,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.TNTPrimeEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -84,6 +85,7 @@ public class EventManager implements Listener {
             tnt.setFuseTicks(3600); //check this
             BukkitTask nukeCountdown = new NukeCountdownTask(nukePlugin.instance.getServer().getCurrentTick()).runTaskTimer(nukePlugin.instance, 0, 1);
             tnt.setGlowing(true);
+            tnt.getWorld().playSound(tnt, Sound.ENTITY_TNT_PRIMED, 6.0F, 0.2F);
             nukeTimers.put(tnt, nukeCountdown);
             List<Entity> list = tnt.getNearbyEntities(25, 25, 25);
             for (Entity k : list) {
@@ -198,13 +200,21 @@ public class EventManager implements Listener {
     }
 
     @EventHandler
-    public void onTotemUse(PlayerDeathEvent ev) {
-        if (ev.getPlayer().getInventory().getItemInOffHand().equals(nukePlugin.instance.goatem) || ev.getPlayer().getInventory().getItemInOffHand().equals(nukePlugin.instance.goatem)) {
-            ev.getPlayer().getWorld().strikeLightning(ev.getPlayer().getLocation());
-            ev.getPlayer().getWorld().playSound(ev.getPlayer(), Sound.ITEM_TRIDENT_HIT_GROUND, 3.0F, 0.5F);
-            ev.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 80, 100));
-            ev.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 6000, 20));
-            ev.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 6000, 3));
+    public void onTotemUse(EntityDamageEvent ev) {
+        if (ev.getEntity() instanceof Player p)
+        if (p.getInventory().getItemInOffHand().equals(nukePlugin.instance.goatem) || p.getInventory().getItemInOffHand().equals(nukePlugin.instance.goatem)) {
+            if (ev.getFinalDamage() > p.getHealth()) {
+                ev.setCancelled(true);
+                if (p.getInventory().getItemInMainHand().equals(nukePlugin.instance.goatem)) p.getInventory().setItemInMainHand(new ItemStack(Material.TOTEM_OF_UNDYING));
+                else p.getInventory().setItemInOffHand(new ItemStack(Material.TOTEM_OF_UNDYING));
+                p.damage(2000);
+                p.setHealth(20);
+                p.getWorld().strikeLightning(p.getLocation());
+                p.getWorld().playSound(p, Sound.ITEM_TRIDENT_RETURN, 6.0F, 0.5F);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.RESISTANCE, 80, 255));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION, 2000, 5));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.STRENGTH, 2000, 3));
+            }
         }
     }
 

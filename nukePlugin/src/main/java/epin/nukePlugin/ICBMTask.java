@@ -23,7 +23,7 @@ public class ICBMTask extends BukkitRunnable {
         f.setTicksToDetonate(f.getTicksToDetonate() + 1);
         v.normalize();
         l.add(v);
-        if ((l.getBlock().getType().isCollidable()) || !(l.getNearbyLivingEntities(1).isEmpty())) {
+        if ((l.getBlock().getType().isCollidable()) || !(l.getNearbyLivingEntities(0.2).isEmpty())) {
             f.setTicksToDetonate(1);
             f.detonate();
             f.getWorld().createExplosion(f, 10F, false, true);
